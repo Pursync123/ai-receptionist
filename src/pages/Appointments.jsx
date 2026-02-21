@@ -2,89 +2,83 @@ import { useState, useEffect } from 'react';
 import client from '../api/client';
 import { Calendar, Clock, User } from 'lucide-react';
 
+const statusColors = {
+  booked:    'bg-emerald-50 text-emerald-700',
+  cancelled: 'bg-red-50 text-red-600',
+  completed: 'bg-blue-50 text-blue-600',
+  no_show:   'bg-gray-100 text-gray-500',
+};
+
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAppointments();
+    const fetch = async () => {
+      try {
+        const { data } = await client.get('/appointments');
+        setAppointments(data.appointments || []);
+      } catch (err) { console.error('Failed to fetch appointments:', err); }
+      finally { setLoading(false); }
+    };
+    fetch();
   }, []);
 
-  const fetchAppointments = async () => {
-    try {
-      const response = await client.get('/appointments');
-      setAppointments(response.data.appointments || []);
-    } catch (error) {
-      console.error('Failed to fetch appointments:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <div>Loading appointments...</div>;
+  if (loading) return <div className="text-gray-400 text-center py-12">Loading appointments...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
-        <h2>Appointments</h2>
-        <span className="text-muted">{appointments.length} Total</span>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Appointments</h2>
+        <span className="text-sm text-gray-400">{appointments.length} Total</span>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ backgroundColor: 'var(--bg-body)', borderBottom: '1px solid var(--border-color)' }}>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="p-4 text-muted text-sm">Patient</th>
-              <th className="p-4 text-muted text-sm">Date & Time</th>
-              <th className="p-4 text-muted text-sm">Reason</th>
-              <th className="p-4 text-muted text-sm">Status</th>
+              <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Patient</th>
+              <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+              <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reason</th>
+              <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {appointments.map((appt) => (
-              <tr key={appt.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td className="p-4">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ 
-                      width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', 
-                      color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' 
-                    }}>
+              <tr key={appt.id} className="hover:bg-gray-50/50 transition-colors">
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-semibold">
                       {appt.patient.first_name[0]}{appt.patient.last_name[0]}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 500 }}>{appt.patient.first_name} {appt.patient.last_name}</div>
-                      <div className="text-muted text-sm">{appt.patient.phone}</div>
+                      <div className="font-medium text-gray-800">{appt.patient.first_name} {appt.patient.last_name}</div>
+                      <div className="text-xs text-gray-400">{appt.patient.phone}</div>
                     </div>
                   </div>
                 </td>
-                <td className="p-4">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Calendar size={14} className="text-muted" />
-                      <span>{new Date(appt.requested_datetime).toLocaleDateString()}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Clock size={14} className="text-muted" />
-                      <span>{new Date(appt.requested_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
+                <td className="px-5 py-3.5">
+                  <div className="flex flex-col gap-0.5 text-sm">
+                    <span className="flex items-center gap-1.5 text-gray-700">
+                      <Calendar size={13} className="text-gray-400" />
+                      {new Date(appt.requested_datetime).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-gray-500">
+                      <Clock size={13} className="text-gray-400" />
+                      {new Date(appt.requested_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
                 </td>
-                <td className="p-4">{appt.reason}</td>
-                <td className="p-4">
-                  <span style={{ 
-                    padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600,
-                    backgroundColor: appt.status === 'booked' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    color: appt.status === 'booked' ? 'var(--secondary)' : 'var(--danger)'
-                  }}>
+                <td className="px-5 py-3.5 text-sm text-gray-600">{appt.reason}</td>
+                <td className="px-5 py-3.5">
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusColors[appt.status] || 'bg-gray-100 text-gray-500'}`}>
                     {appt.status.toUpperCase()}
                   </span>
                 </td>
               </tr>
             ))}
             {appointments.length === 0 && (
-              <tr>
-                <td colSpan="4" className="p-4 text-center text-muted">No appointments found</td>
-              </tr>
+              <tr><td colSpan="4" className="px-5 py-8 text-center text-gray-400">No appointments found</td></tr>
             )}
           </tbody>
         </table>

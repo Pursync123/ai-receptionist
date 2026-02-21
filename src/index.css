@@ -1,1 +1,13 @@
-@import './styles/variables.css';
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Georgia", "Cambria", "Times New Roman", serif;
+  --color-sidebar: #1e3a5f;
+  --color-sidebar-hover: #264d7a;
+  --color-sidebar-active: #3b82f6;
+}
+
+body {
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+}

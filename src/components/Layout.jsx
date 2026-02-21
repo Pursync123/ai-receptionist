@@ -11,29 +11,16 @@ const Layout = ({ children }) => {
   ];
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <aside style={{ 
-        width: '250px', 
-        backgroundColor: 'var(--bg-surface)', 
-        borderRight: '1px solid var(--border-color)',
-        padding: 'var(--spacing-lg)',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <h1 style={{ 
-          fontSize: '1.5rem', 
-          fontWeight: 'bold', 
-          color: 'var(--primary)', 
-          marginBottom: 'var(--spacing-xl)',
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '8px' 
-        }}>
-          AI Receptionist
-        </h1>
+    <div className="flex h-screen w-screen overflow-hidden font-serif">
+      {/* ── Blue Sidebar ──────────────────────────────────────────────── */}
+      <aside className="w-60 flex flex-col bg-[var(--color-sidebar)] text-white">
+        <div className="px-5 py-6">
+          <h1 className="text-xl font-bold tracking-tight text-blue-200">
+            AI Receptionist
+          </h1>
+        </div>
 
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <nav className="flex-1 flex flex-col gap-1 px-3">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -41,32 +28,29 @@ const Layout = ({ children }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px',
-                  borderRadius: 'var(--radius)',
-                  textDecoration: 'none',
-                  color: isActive ? 'white' : 'var(--text-muted)',
-                  backgroundColor: isActive ? 'var(--primary)' : 'transparent',
-                  fontWeight: isActive ? 500 : 400,
-                  transition: 'all 0.2s',
-                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  ${isActive
+                    ? 'bg-[var(--color-sidebar-active)] text-white shadow-sm'
+                    : 'text-blue-200/80 hover:bg-[var(--color-sidebar-hover)] hover:text-white'
+                  }`}
               >
-                <Icon size={20} />
+                <Icon size={18} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
+
+        <div className="px-5 py-4 text-xs text-blue-300/50">
+          © 2026 Pursync
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main style={{ flex: 1, padding: 'var(--spacing-xl)', overflowY: 'auto' }}>
-         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {children}
-         </div>
+      {/* ── Main Content ──────────────────────────────────────────────── */}
+      <main className="flex-1 bg-gray-50 overflow-y-auto">
+        <div className="max-w-6xl mx-auto p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -2,84 +2,57 @@ import { useState, useEffect } from 'react';
 import client from '../api/client';
 import { Users, Calendar, Clock } from 'lucide-react';
 
+const StatCard = ({ icon: Icon, label, value, color }) => (
+  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <div className="flex items-center gap-2.5 mb-3">
+      <Icon size={18} className="text-gray-400" />
+      <span className="text-sm text-gray-500 font-medium">{label}</span>
+    </div>
+    <p className={`text-3xl font-bold ${color}`}>{value}</p>
+  </div>
+);
+
 const Dashboard = () => {
-    const [stats, setStats] = useState({
-        totalAppointments: 0,
-        activeDoctors: 0,
-        todaysSlots: 0
-    });
-    const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ totalAppointments: 0, activeDoctors: 0, todaysSlots: 0 });
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                // Fetch appointments count
-                const apptRes = await client.get('/appointments');
-                const totalAppts = apptRes.data.count || 0;
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [apptRes, docRes] = await Promise.all([
+          client.get('/appointments'),
+          client.get('/doctors'),
+        ]);
+        let availableSlotsCount = 0;
+        (docRes.data.doctors || []).forEach(doc => {
+          availableSlotsCount += doc.available_slots_count || 0;
+        });
+        setStats({
+          totalAppointments: apptRes.data.count || 0,
+          activeDoctors: docRes.data.count || 0,
+          todaysSlots: availableSlotsCount,
+        });
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
-                // Fetch doctors count
-                const docRes = await client.get('/doctors');
-                const totalDocs = docRes.data.count || 0;
+  if (loading) return <div className="text-gray-400 text-center py-12">Loading stats...</div>;
 
-                // For today's slots, we might need to filter available slots manually if no endpoint exists
-                // Or use the doctors endpoint which includes slots if we ask
-                // For now, let's use a simple approximation or 0 if we can't easily get it without heavy logic
-                // The user asked to check "doctors, appoitments, dashboard related endpoints"
-                
-                // Let's count available slots from the doctors response if included
-                let availableSlotsCount = 0;
-                if (docRes.data.doctors) {
-                     docRes.data.doctors.forEach(doc => {
-                        availableSlotsCount += doc.available_slots_count || 0;
-                     });
-                }
-
-                setStats({
-                    totalAppointments: totalAppts,
-                    activeDoctors: totalDocs,
-                    todaysSlots: availableSlotsCount // This is total available, close enough for now
-                });
-            } catch (error) {
-                console.error("Failed to fetch dashboard stats", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, []);
-
-    if (loading) return <div>Loading stats...</div>;
-
-    return (
-      <div>
-        <h2 style={{ fontSize: '2rem', marginBottom: 'var(--spacing-lg)' }}>Dashboard</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--spacing-lg)' }}>
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Calendar className="text-muted" size={20} />
-                <h3 className="text-muted text-sm">Total Appointments</h3>
-            </div>
-            <p className="text-xl" style={{ color: 'var(--primary)' }}>{stats.totalAppointments}</p>
-          </div>
-          <div className="card">
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Users className="text-muted" size={20} />
-                <h3 className="text-muted text-sm">Active Doctors</h3>
-            </div>
-            <p className="text-xl" style={{ color: 'var(--secondary)' }}>{stats.activeDoctors}</p>
-          </div>
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <Clock className="text-muted" size={20} />
-                <h3 className="text-muted text-sm">Available Slots</h3>
-            </div>
-            <p className="text-xl" style={{ color: 'var(--accent)' }}>{stats.todaysSlots}</p>
-          </div>
-        </div>
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <StatCard icon={Calendar} label="Total Appointments" value={stats.totalAppointments} color="text-indigo-600" />
+        <StatCard icon={Users}    label="Active Doctors"      value={stats.activeDoctors}     color="text-emerald-600" />
+        <StatCard icon={Clock}    label="Available Slots"     value={stats.todaysSlots}       color="text-amber-500" />
       </div>
-    );
-  };
-  
-  export default Dashboard;
+    </div>
+  );
+};
 
+export default Dashboard;
