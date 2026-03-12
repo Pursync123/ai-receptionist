@@ -19,13 +19,13 @@ const Appointments = () => {
         const { data } = await client.get('/appointments');
         const allAppts = data.appointments || [];
         
-        // Filter: Only show appointments from today onwards
+        // Filter: Only show appointments from today onwards (using LOCAL time, not UTC)
         const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
         
         const filtered = allAppts.filter(appt => {
-          // Compare dates (YYYY-MM-DD) natively
-          const apptDateStr = new Date(appt.requested_datetime).toISOString().split('T')[0];
+          // Extract date string directly from the appointment (already in local IST)
+          const apptDateStr = appt.requested_datetime.split('T')[0];
           return apptDateStr >= todayStr;
         });
         
@@ -87,7 +87,9 @@ const Appointments = () => {
             <tbody className="divide-y divide-gray-50">
               {appointments.map((appt) => {
                 const dateObj = new Date(appt.requested_datetime);
-                const isToday = dateObj.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                const localNow = new Date();
+                const todayLocal = `${localNow.getFullYear()}-${String(localNow.getMonth()+1).padStart(2,'0')}-${String(localNow.getDate()).padStart(2,'0')}`;
+                const isToday = appt.requested_datetime.split('T')[0] === todayLocal;
                 
                 return (
                   <tr key={appt.id} className="hover:bg-indigo-50/30 transition-all duration-200 group">
