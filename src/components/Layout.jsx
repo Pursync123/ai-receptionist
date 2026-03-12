@@ -42,7 +42,7 @@ const Layout = ({ children }) => {
         </nav>
 
         <div className="px-5 py-4 text-xs text-blue-300/50">
-          © 2026 Pursync
+
         </div>
       </aside>
 
