@@ -30,7 +30,7 @@ const DoctorManager = () => {
 
   const fetchSlots = useCallback(async (doctorId) => {
     try {
-      const { data } = await client.get(`doctors/${doctorId}?include_slots=true&slot_limit=500&manage_mode=true`);
+      const { data } = await client.get(`doctors?doctor_id=${doctorId}&include_slots=true&slot_limit=500&manage_mode=true`);
       setSlots(data.doctor.available_slots || []);
     } catch (err) { console.error('Failed to fetch slots', err); }
   }, []);
