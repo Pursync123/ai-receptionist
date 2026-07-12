@@ -13,6 +13,19 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const handleCancel = async (apptId) => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
+    try {
+      await client.post('/cancel-appointment', { appointment_id: apptId });
+      setAppointments(prev =>
+        prev.map(appt => appt.id === apptId ? { ...appt, status: 'cancelled' } : appt)
+      );
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+      alert('Failed to cancel appointment: ' + (err.response?.data?.detail || err.message));
+    }
+  };
+
   useEffect(() => {
     const fetchAppts = async () => {
       try {
@@ -82,6 +95,7 @@ const Appointments = () => {
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Schedule</th>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Reason for Visit</th>
                 <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                <th className="px-6 py-4 text-[0.65rem] font-bold text-gray-400 uppercase tracking-[0.2em]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -126,13 +140,23 @@ const Appointments = () => {
                         {appt.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4">
+                      {appt.status === 'booked' && (
+                        <button
+                          onClick={() => handleCancel(appt.id)}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-semibold transition-colors duration-200"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
               
               {appointments.length === 0 && (
                 <tr>
-                  <td colSpan="4" className="px-6 py-16 text-center">
+                  <td colSpan="5" className="px-6 py-16 text-center">
                     <div className="inline-flex flex-col items-center justify-center p-6 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
                       <Calendar className="text-gray-300 mb-3" size={32} />
                       <p className="text-gray-500 font-medium tracking-wide">No upcoming appointments scheduled</p>
