@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, LogOut } from 'lucide-react';
 
-const Layout = ({ children }) => {
+const Layout = ({ children, onLogout }) => {
   const location = useLocation();
 
   const navItems = [
@@ -41,8 +41,14 @@ const Layout = ({ children }) => {
           })}
         </nav>
 
-        <div className="px-5 py-4 text-xs text-blue-300/50">
-
+        <div className="p-4 border-t border-blue-800/40">
+          <button
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-200/80 hover:bg-red-500/10 hover:text-red-100 transition-colors cursor-pointer"
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
         </div>
       </aside>
 
