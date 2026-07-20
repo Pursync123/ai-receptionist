@@ -75,11 +75,15 @@ const DoctorManager = () => {
   };
 
   const toggleSlotStatus = async (slotId, cur) => {
+    if (cur === 'booked') {
+      const confirmCancel = window.confirm("Are you sure you want to disable this slot? This will cancel the booked appointment and notify the patient.");
+      if (!confirmCancel) return;
+    }
     try {
-      await client.patch(`/slots/${slotId}`, { status: cur === 'available' ? 'disabled' : 'available' });
+      const newStatus = (cur === 'available' || cur === 'booked') ? 'disabled' : 'available';
+      await client.patch(`/slots/${slotId}`, { status: newStatus });
       fetchSlots(selectedDoctor.id);
-      fetchDoctors();
-    } catch (err) { console.error('toggle failed', err); }
+    } catch (err) { console.error('Failed to fetch slots', err); }
   };
 
   const toggleDate = (d) => setCollapsedDates(p => ({ ...p, [d]: !p[d] }));
@@ -218,11 +222,11 @@ const DoctorManager = () => {
                               {slot.status}
                             </span>
                           </div>
-                          {slot.status !== 'booked' && (
+                          {slot.status !== 'cancelled' && (
                             <button onClick={() => toggleSlotStatus(slot.id, slot.status)}
-                              title={slot.status === 'available' ? 'Disable' : 'Enable'}
+                              title={(slot.status === 'available' || slot.status === 'booked') ? 'Disable' : 'Enable'}
                               className={`p-1.5 rounded-md border transition-colors cursor-pointer
-                                ${slot.status === 'available'
+                                ${(slot.status === 'available' || slot.status === 'booked')
                                   ? 'border-red-200 text-red-500 hover:bg-red-50'
                                   : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}>
                               <Power size={13} />
