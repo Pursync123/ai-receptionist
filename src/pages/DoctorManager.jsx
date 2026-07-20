@@ -227,9 +227,9 @@ const DoctorManager = () => {
                               title={(slot.status === 'available' || slot.status === 'booked') ? 'Disable' : 'Enable'}
                               className={`p-1.5 rounded-md border transition-colors cursor-pointer
                                 ${(slot.status === 'available' || slot.status === 'booked')
-                                  ? 'border-red-200 text-red-500 hover:bg-red-50'
-                                  : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}>
-                              <Power size={13} />
+                                  ? 'border-red-200 text-red-500 hover:bg-red-50 disable'
+                                  : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 enable'}`}>
+                              <Power className={(slot.status === 'available' || slot.status === 'booked') ? 'disable' : 'enable'} size={13} />
                             </button>
                           )}
                         </div>
