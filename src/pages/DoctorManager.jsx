@@ -83,6 +83,7 @@ const DoctorManager = () => {
       const newStatus = (cur === 'available' || cur === 'booked') ? 'disabled' : 'available';
       await client.patch(`/slots/${slotId}`, { status: newStatus });
       fetchSlots(selectedDoctor.id);
+      fetchDoctors();
     } catch (err) { console.error('Failed to fetch slots', err); }
   };
 
