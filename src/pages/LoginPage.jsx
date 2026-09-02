@@ -40,10 +40,10 @@ const LoginPage = ({ onLoginSuccess }) => {
               <Sparkles className="text-white h-7 w-7" />
             </div>
             <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              AI Receptionist
+              Sri Sai Lorven Clinic
             </h2>
             <p className="text-indigo-200/60 mt-2 text-sm font-medium">
-              Sign in to manage appointments & doctors
+              AI Receptionist Portal
             </p>
           </div>
 
