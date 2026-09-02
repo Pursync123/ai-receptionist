@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { Calendar, Clock, User, Sparkles, Activity } from 'lucide-react';
+import { Calendar, Clock, User, Sparkles, Activity, Download } from 'lucide-react';
 
 const statusStyles = {
   booked:    'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm',
@@ -24,6 +24,52 @@ const Appointments = () => {
       console.error('Failed to cancel appointment:', err);
       alert('Failed to cancel appointment: ' + (err.response?.data?.detail || err.message));
     }
+  };
+
+  const handleDownloadExcel = () => {
+    if (!appointments || appointments.length === 0) {
+      alert('No appointment records available to download.');
+      return;
+    }
+
+    const headers = [
+      'Appointment ID',
+      'Patient Name',
+      'Phone Number',
+      'Appointment Date',
+      'Appointment Time',
+      'Reason for Visit',
+      'Status'
+    ];
+
+    const rows = appointments.map((appt) => {
+      const dateObj = new Date(appt.requested_datetime);
+      const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const patientName = `${appt.patient?.first_name || ''} ${appt.patient?.last_name || ''}`.trim();
+      
+      return [
+        `"${appt.id || ''}"`,
+        `"${patientName.replace(/"/g, '""')}"`,
+        `"${(appt.patient?.phone || '').replace(/"/g, '""')}"`,
+        `"${dateStr}"`,
+        `"${timeStr}"`,
+        `"${(appt.reason || '').replace(/"/g, '""')}"`,
+        `"${(appt.status || '').replace(/"/g, '""')}"`
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const today = new Date().toISOString().split('T')[0];
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Upcoming_Appointments_Report_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -75,9 +121,19 @@ const Appointments = () => {
           </h2>
           <p className="text-gray-500 mt-2 font-medium text-sm">Review scheduled visits from today onwards</p>
         </div>
-        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2">
-          <span className="text-2xl font-black text-indigo-600">{appointments.length}</span>
-          <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold mt-1">Scheduled</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-emerald-200 transition-all duration-150 active:scale-95 cursor-pointer"
+            title="Download report in Excel format"
+          >
+            <Download size={16} />
+            Download Excel Report
+          </button>
+          <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2">
+            <span className="text-2xl font-black text-indigo-600">{appointments.length}</span>
+            <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold mt-1">Scheduled</span>
+          </div>
         </div>
       </div>
 
